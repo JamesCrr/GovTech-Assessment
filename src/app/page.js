@@ -1,58 +1,57 @@
 "use client";
 import { useState } from "react";
+import NumberInput from "./components/NumberInput";
 
 export default function Home() {
-  const [number1, setNumber1] = useState(0);
-  const [number2, setNumber2] = useState(0);
+  const [numbers, setNumbers] = useState({});
   const [result, setResult] = useState(undefined);
 
+  /**
+   * Sends a POST Request to API endpoint with the numbers in the body
+   * @param {String} operation The "add" or "subtract" operation to use
+   */
   async function sendNumbers(operation) {
     const searchParams = new URLSearchParams();
-    console.log(number1, number2);
-    searchParams.set("num1", number1);
-    searchParams.set("num2", number2);
     searchParams.set("operation", operation);
+    for (const numKey in numbers) {
+      searchParams.set(numKey, numbers[numKey]);
+    }
 
+    // Send the POST request
     try {
       const response = await fetch("/api", {
         method: "POST",
         body: searchParams,
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch number");
+        throw new Error("Failed to send numbers");
       }
+      // Set result state
       const resultJSON = await response.json();
       setResult(resultJSON.result);
     } catch (error) {
-      console.error("Error fetching number:", error.message);
+      console.error("Error sending numbers:", error.message);
     }
   }
+
+  /**
+   * Function to handle when the input's value changes
+   * @param {String} name The key in the key-value pair of numbers
+   * @param {Number} newNum The value in the key-value pair of numbers
+   */
+  const handleInputChange = (name, newNum) => {
+    setNumbers((prev) => ({
+      ...prev,
+      [name]: newNum,
+    }));
+  };
 
   return (
     <div className="h-screen flex flex-col items-center">
       <form style={{ marginTop: "15rem" }}>
         <div className="space-y-4">
-          <div>
-            <label htmlFor="num1">First number</label>
-            <br />
-            <input
-              className="p-2 text-lg rounded text-black border border-gray-500"
-              type="number"
-              name="num1"
-              onChange={(e) => (e.target.value == "" ? setNumber1(0) : setNumber1(e.target.value))}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="num2">Second number</label>
-            <br />
-            <input
-              className="p-2 text-lg rounded text-black border border-gray-500"
-              type="number"
-              name="num2"
-              onChange={(e) => (e.target.value == "" ? setNumber2(0) : setNumber2(e.target.value))}
-            />
-          </div>
+          <NumberInput labelText={"First Number"} name="num1" placeholder={0} onChangeFunc={handleInputChange} />
+          <NumberInput labelText={"Second Number"} name="num2" placeholder={0} onChangeFunc={handleInputChange} />
         </div>
 
         <div className="mt-10 flex items-center justify-between">
@@ -74,7 +73,7 @@ export default function Home() {
       </form>
 
       <div className="mt-6">
-        <p className="text-3xl font-bold underline">{result ? "Result: " + result : ""}</p>
+        <p className="text-3xl font-bold underline">{result !== undefined ? "Result: " + result : ""}</p>
       </div>
     </div>
   );
