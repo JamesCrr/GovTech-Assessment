@@ -12,14 +12,13 @@ export default function Home() {
    */
   async function sendNumbers(operation) {
     const searchParams = new URLSearchParams();
-    searchParams.set("operation", operation);
     for (const numKey in numbers) {
       searchParams.set(numKey, numbers[numKey]);
     }
 
     // Send the POST request
     try {
-      const response = await fetch("/api", {
+      const response = await fetch("/api" + (operation == "add" ? "/add" : "/subtract"), {
         method: "POST",
         body: searchParams,
       });
@@ -72,7 +71,7 @@ export default function Home() {
         </div>
       </form>
 
-      <div className="mt-6">
+      <div className="mt-10">
         <p className="text-3xl font-bold underline">{result !== undefined ? "Result: " + result : ""}</p>
       </div>
     </div>
